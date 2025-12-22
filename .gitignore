@@ -1,0 +1,23 @@
+################################
+# Terraform common
+################################
+**/.terraform/
+**/.terraform.lock.hcl
+
+# Terraform state (절대 커밋 금지)
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/*.backup
+
+# tfvars (민감 정보 가능)
+*.tfvars
+*.tfvars.json
+
+
+################################
+# OS / Editor
+################################
+.DS_Store
+.idea/
+.vscode/
+*.swp

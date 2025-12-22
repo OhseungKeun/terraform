@@ -1,0 +1,63 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "VisualEditor0",
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetPolicyVersion",
+        "iam:DeletePolicyVersion",
+        "iam:CreatePolicyVersion",
+        "iam:UpdateAssumeRolePolicy",
+        "secretsmanager:DescribeSecret",
+        "iam:ListRoleTags",
+        "secretsmanager:PutSecretValue",
+        "secretsmanager:CreateSecret",
+        "iam:TagRole",
+        "secretsmanager:DeleteSecret",
+        "iam:UpdateOpenIDConnectProviderThumbprint",
+        "iam:DeletePolicy",
+        "iam:CreateRole",
+        "iam:AttachRolePolicy",
+        "iam:ListInstanceProfilesForRole",
+        "secretsmanager:GetSecretValue",
+        "iam:DetachRolePolicy",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListPolicyTags",
+        "iam:ListRolePolicies",
+        "iam:DeleteOpenIDConnectProvider",
+        "iam:DeleteInstanceProfile",
+        "iam:GetRole",
+        "iam:GetPolicy",
+        "iam:ListEntitiesForPolicy",
+        "iam:DeleteRole",
+        "iam:TagPolicy",
+        "iam:CreateOpenIDConnectProvider",
+        "iam:CreatePolicy",
+        "secretsmanager:GetResourcePolicy",
+        "iam:ListPolicyVersions",
+        "iam:UpdateRole",
+        "iam:GetOpenIDConnectProvider",
+        "iam:TagOpenIDConnectProvider",
+        "secretsmanager:TagResource",
+        "sts:AssumeRoleWithWebIdentity",
+        "iam:ListRoles"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:*:terraform.user03:secret:*",
+        "arn:aws:iam::terraform.user03:instance-profile/*",
+        "arn:aws:iam::terraform.user03:role/*",
+        "arn:aws:iam::terraform.user03:oidc-provider/*",
+        "arn:aws:iam::terraform.user03:policy/*"
+      ]
+    },
+    {
+      "Sid": "VisualEditor1",
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+        ],
+      "Resource": "*"
+    }
+  ]
+}
