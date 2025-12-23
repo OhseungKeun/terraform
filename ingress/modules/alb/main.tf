@@ -1,3 +1,4 @@
+# Security Group 생성(HTTP 허용)
 resource "aws_security_group" "alb" {
   name_prefix = "${var.name}-alb-"
   vpc_id      = var.vpc_id
@@ -17,6 +18,7 @@ resource "aws_security_group" "alb" {
   }
 }
 
+# ALB 생성(L7 LB)
 resource "aws_lb" "this" {
   name               = var.name
   load_balancer_type = "application"
@@ -26,6 +28,8 @@ resource "aws_lb" "this" {
   security_groups = [aws_security_group.alb.id]
 }
 
+# ALB Target Group 생성(ALB -> NLB 전달 위함)
+# IP 기반 타겟 설정
 resource "aws_lb_target_group" "this" {
   name_prefix = "tg-"
   port        = 80
@@ -43,6 +47,7 @@ resource "aws_lb_target_group" "this" {
   }
 }
 
+# Request를 Target Group으로 전달
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn
   port              = 80
@@ -54,6 +59,8 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+# Target Group에 NLB Private IP 등록
+# ALB -> NLB -> Openshift 전달 구성
 resource "aws_lb_target_group_attachment" "nlb_ips" {
   for_each         = toset(var.nlb_target_ips)
   target_group_arn = aws_lb_target_group.this.arn
