@@ -22,6 +22,7 @@ variable "openshift_version" {
 variable "create_vpc" {
   type        = bool
   description = "If you would like to create a new VPC, set this value to 'true'. If you do not want to create a new VPC, set this value to 'false'."
+  default     = true
 }
 
 # ROSA Cluster info
@@ -61,6 +62,7 @@ variable "aws_subnet_ids" {
 variable "private_cluster" {
   type        = bool
   description = "If you want to create a private cluster, set this value to 'true'. If you want a publicly available cluster, set this value to 'false'."
+  default     = false
 }
 
 #VPC Info

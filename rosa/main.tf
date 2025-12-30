@@ -95,3 +95,15 @@ module "rosa-hcp" {
 
   depends_on = [time_sleep.wait_60_seconds]
 }
+
+data "aws_security_groups" "rosa_nodes" {
+  filter {
+    name   = "vpc-id"
+    values = [module.vpc[0].vpc_id]
+  }
+
+  filter {
+    name   = "tag:red-hat-managed"
+    values = ["true"]
+  }
+}
