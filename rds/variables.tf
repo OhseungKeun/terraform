@@ -1,7 +1,7 @@
 variable "name" {
   description = "RDS 리소스 이름 prefix (AWS 식별자)"
   type        = string
-  default     = "sajo_db"
+  default     = "sajo-db"
 }
 
 variable "db_name" {
