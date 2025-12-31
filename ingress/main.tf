@@ -22,7 +22,12 @@ data "aws_vpc" "this" {
 data "aws_network_interfaces" "nlb" {
   filter {
     name   = "description"
-    values = ["ELB net/${data.aws_lb.rosa_nlb.name}/*"]
+    values = ["ELB net/*"]
+  }
+
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.this.id]
   }
 }
 
@@ -35,15 +40,14 @@ data "aws_network_interface" "nlb" {
 locals {
 # NLB가 사용하는 private IP 조회
 # ALB Target Group에서 IP 타켓으로 사용(ALB -> NLB)
-  nlb_private_ips = [
-    for eni in data.aws_network_interface.nlb : eni.private_ip
-  ]
+  nlb_private_ips = flatten([
+    for eni in data.aws_network_interface.nlb :
+    eni.private_ips
+  ])
 
   vpc_id        = data.aws_vpc.this.id
   subnet_ids    = data.aws_lb.rosa_nlb.subnets
-  subnet_cidrs  = [
-    for s in data.aws_subnet.nlb : s.cidr_block
-  ]
+  subnet_cidrs  = [for s in data.aws_subnet.nlb : s.cidr_block]
 }
 
 # ALB 생성

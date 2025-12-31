@@ -1,9 +1,6 @@
-# Route53 Public Zone 생성
 resource "aws_route53_zone" "public" {
   name = var.domain_name
 }
-
-# ALB를 가르키는 DNS 레코드 생성
 
 resource "aws_route53_record" "alb" {
   zone_id = aws_route53_zone.public.zone_id

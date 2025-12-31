@@ -1,4 +1,6 @@
-# Security Group 생성(HTTP 허용)
+########################
+# ALB Security Group
+########################
 resource "aws_security_group" "alb" {
   name_prefix = "${var.name}-alb-"
   vpc_id      = var.vpc_id
@@ -18,7 +20,9 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# ALB 생성(L7 LB)
+########################
+# ALB
+########################
 resource "aws_lb" "this" {
   name               = var.name
   load_balancer_type = "application"
@@ -28,10 +32,30 @@ resource "aws_lb" "this" {
   security_groups = [aws_security_group.alb.id]
 }
 
-# ALB Target Group 생성(ALB -> NLB 전달 위함)
-# IP 기반 타겟 설정
-resource "aws_lb_target_group" "this" {
-  name_prefix = "tg-"
+########################
+# ROSA Ingress NLB 자동 조회
+########################
+data "aws_lb" "rosa_ingress" {
+  tags = {
+    "kubernetes.io/service-name" = "openshift-ingress/router-default"
+  }
+}
+
+########################
+# NLB ENI 조회
+########################
+data "aws_network_interfaces" "rosa_ingress" {
+  filter {
+    name   = "description"
+    values = ["ELB net/*${data.aws_lb.rosa_ingress.name}*"]
+  }
+}
+
+########################
+# ALB Target Group
+########################
+resource "aws_lb_target_group" "rosa_ingress" {
+  name_prefix = "rosa-"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -47,7 +71,9 @@ resource "aws_lb_target_group" "this" {
   }
 }
 
-# Request를 Target Group으로 전달
+########################
+# ALB Listener
+########################
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn
   port              = 80
@@ -55,15 +81,28 @@ resource "aws_lb_listener" "http" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.this.arn
+    target_group_arn = aws_lb_target_group.rosa_ingress.arn
   }
 }
 
-# Target Group에 NLB Private IP 등록
-# ALB -> NLB -> Openshift 전달 구성
-resource "aws_lb_target_group_attachment" "nlb_ips" {
-  for_each         = toset(var.nlb_target_ips)
-  target_group_arn = aws_lb_target_group.this.arn
+########################
+# ROSA Ingress IP 자동 등록
+########################
+resource "aws_lb_target_group_attachment" "rosa_ips" {
+  for_each = toset(flatten([
+    for eni_id in data.aws_network_interfaces.rosa_ingress.ids :
+    data.aws_network_interface.eni[eni_id].private_ips
+  ]))
+
+  target_group_arn = aws_lb_target_group.rosa_ingress.arn
   target_id        = each.value
   port             = 80
+}
+
+########################
+# ENI 상세 조회
+########################
+data "aws_network_interface" "eni" {
+  for_each = toset(data.aws_network_interfaces.rosa_ingress.ids)
+  id       = each.value
 }
