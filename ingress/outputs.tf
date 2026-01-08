@@ -1,7 +1,3 @@
-output "alb_dns_name" {
-  value = module.alb.alb_dns_name
-}
-
-output "fqdn" {
-  value = module.route53.fqdn
+output "cloudfront_domain_name" {
+  value = module.cloudfront.domain_name
 }

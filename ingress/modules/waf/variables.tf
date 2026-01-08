@@ -1,7 +1,3 @@
 variable "name" {
-  type = string
-}
-
-variable "alb_arn" {
-  type = string
+  description = "WAF name"
 }

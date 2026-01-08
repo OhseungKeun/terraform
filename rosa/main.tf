@@ -73,6 +73,7 @@ module "rosa-hcp" {
   account_role_prefix    = local.cluster_name
   operator_role_prefix   = local.cluster_name
   replicas               = local.worker_node_replicas
+  compute_machine_type = "m5.2xlarge"
   aws_availability_zones = local.region_azs
   create_oidc            = true
   private                = var.private_cluster

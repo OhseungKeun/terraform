@@ -1,17 +1,13 @@
+variable "name" {
+  description = "Base name"
+}
+variable "zone_name" {
+  description = "banson.shop"
+}
 variable "domain_name" {
-  description = "Public hosted zone name"
-  type        = string
-  default     = "banson.shop"
+  description = "rosa.banson.shop"
 }
 
-variable "route53_record_name" {
-  description = "ALB record name"
-  type        = string
-  default     = "rosa"
-}
-
-variable "alb_name" {
-  description = "ALB name"
-  type        = string
-  default     = "rosa-alb"
+variable "local_public_ip" {
+  description = "Local environment public IP for DR"
 }

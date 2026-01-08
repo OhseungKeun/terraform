@@ -1,16 +1,19 @@
+variable "zone_name" {
+  description = "banson.shop"
+}
+
 variable "domain_name" {
-  type = string
+  description = "rosa.banson.shop"
 }
 
-variable "record_name" {
-  type = string
+variable "cf_domain_name" {
+  description = "CloudFront distribution domain"
 }
 
-variable "alb_dns_name" {
-  type = string
+variable "cf_zone_id" {
+  description = "CloudFront hosted zone id"
 }
 
-variable "alb_zone_id" {
-  type = string
+variable "local_public_ip" {
+  description = "DR local environment public IP"
 }
-

@@ -1,82 +1,65 @@
-# openshift ingress(Rosa Cluster)에 의해 생성된 NLB 태그 조회
-data "aws_lb" "rosa_nlb" {
+############################
+# ROSA Ingress NLB 조회
+############################
+data "aws_lb" "rosa_ingress" {
   tags = {
     "kubernetes.io/service-name" = "openshift-ingress/router-default"
   }
 }
 
-# NLB에 속한 subnet 조회
-data "aws_subnet" "nlb" {
-  for_each = toset(data.aws_lb.rosa_nlb.subnets)
-  id       = each.value
-}
-
-# NLB가 위치한 VPC 정보 조회(여러 서브넷이 존재하더라도 하나의 VPC만 조회)
-data "aws_vpc" "this" {
-  id = one(distinct([
-    for s in data.aws_subnet.nlb : s.vpc_id
-  ]))
-}
-
-# NLB에 의해 생성된 ENI(Network Interface) 목록 조회
-data "aws_network_interfaces" "nlb" {
-  filter {
-    name   = "description"
-    values = ["ELB net/*"]
-  }
-
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.this.id]
-  }
-}
-
-# 위에서 조회한 ENI를 기반으로 상세 내용 조회
-data "aws_network_interface" "nlb" {
-  for_each = toset(data.aws_network_interfaces.nlb.ids)
-  id       = each.value
-}
-
-locals {
-# NLB가 사용하는 private IP 조회
-# ALB Target Group에서 IP 타켓으로 사용(ALB -> NLB)
-  nlb_private_ips = flatten([
-    for eni in data.aws_network_interface.nlb :
-    eni.private_ips
-  ])
-
-  vpc_id        = data.aws_vpc.this.id
-  subnet_ids    = data.aws_lb.rosa_nlb.subnets
-  subnet_cidrs  = [for s in data.aws_subnet.nlb : s.cidr_block]
-}
-
-# ALB 생성
-# NLB의 Private IP를 Target Group에 등록
-module "alb" {
-  source = "./modules/alb"
-
-  name       = var.alb_name
-  vpc_id     = local.vpc_id
-  subnet_ids = local.subnet_ids
-  nlb_target_ips = local.nlb_private_ips
-}
-
-# Route53 생성
-# ALB DNS 이름을 도메인 레코드에 등록
+############################
+# Route53 (Hosted Zone + Record)
+############################
 module "route53" {
   source = "./modules/route53"
 
-  domain_name  = var.domain_name
-  record_name   = var.route53_record_name
+  zone_name      = var.zone_name       # banson.shop
+  domain_name    = var.domain_name     # rosa.banson.shop
 
-  alb_dns_name  = module.alb.alb_dns_name
-  alb_zone_id   = module.alb.alb_zone_id
+  # Primary (CloudFront)
+  cf_domain_name = module.cloudfront.domain_name
+  cf_zone_id     = module.cloudfront.hosted_zone_id
+
+  # Secondary (Local DR)
+  local_public_ip = var.local_public_ip
 }
 
-# WAF 생성
+############################
+# ACM (us-east-1, CloudFront용)
+############################
+module "acm" {
+  source = "./modules/acm"
+
+  providers = {
+    aws = aws.us_east_1
+  }
+
+  domain_name    = var.domain_name
+  hosted_zone_id = module.route53.zone_id
+}
+
+############################
+# WAF (CloudFront scope → us-east-1)
+############################
 module "waf" {
   source = "./modules/waf"
 
-  name    = "${var.alb_name}-waf"
-  alb_arn = module.alb.alb_arn
+  providers = {
+    aws = aws.us_east_1
+  }
+
+  name = var.name
+}
+
+############################
+# CloudFront
+############################
+module "cloudfront" {
+  source = "./modules/cloudfront"
+
+  name                 = var.name
+  domain_name          = var.domain_name 
+  origin_domain_name   = data.aws_lb.rosa_ingress.dns_name
+  web_acl_arn          = module.waf.web_acl_arn
+  acm_certificate_arn  = module.acm.certificate_arn
 }
