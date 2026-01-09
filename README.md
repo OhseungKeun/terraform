@@ -37,6 +37,10 @@ $ terraform plan
 
 $ terraform apply -auto-approve
 
+* 완료 후
+
+$ terraform apply -var="enable_failover=true" -auto-approve
+
 ### DB 구축
 
 $ cd rds

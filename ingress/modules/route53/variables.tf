@@ -17,3 +17,8 @@ variable "cf_zone_id" {
 variable "local_public_ip" {
   description = "DR local environment public IP"
 }
+
+variable "enable_failover" {
+  type    = bool
+  default = false
+}

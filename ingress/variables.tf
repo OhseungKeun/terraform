@@ -11,3 +11,8 @@ variable "domain_name" {
 variable "local_public_ip" {
   description = "Local environment public IP for DR"
 }
+
+variable "enable_failover" {
+  type    = bool
+  default = false
+}

@@ -22,6 +22,8 @@ module "route53" {
 
   # Secondary (Local DR)
   local_public_ip = var.local_public_ip
+
+  enable_failover = var.enable_failover
 }
 
 ############################
