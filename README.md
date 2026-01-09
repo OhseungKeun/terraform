@@ -43,7 +43,7 @@ $ terraform plan
 
 $ terraform apply -auto-approve
 
-* 완료 후(Failover 구축)
+* 완료 후(Failover)
 
 $ terraform apply -var="enable_failover=true" -auto-approve
 
