@@ -29,6 +29,12 @@ $ terraform apply -auto-approve
 
 ### CloudFront(DR) + WAF + Route53 구축
 
+* 주의사항
+
+Route53 구축할 때 ACM 인증용 Route53 레코드를 먼저 생성
+
+생성 이후 Failover 구축
+
 $ cd ingress
 
 $ terraform init
@@ -37,7 +43,7 @@ $ terraform plan
 
 $ terraform apply -auto-approve
 
-* 완료 후
+* 완료 후(Failover 구축)
 
 $ terraform apply -var="enable_failover=true" -auto-approve
 
