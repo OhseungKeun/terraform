@@ -1,4 +1,6 @@
+############################
 # ROSA Local Terraform State 참조
+############################
 data "terraform_remote_state" "rosa" {
   backend = "local"
 
@@ -7,7 +9,9 @@ data "terraform_remote_state" "rosa" {
   }
 }
 
+############################
 # ROSA에서 가져온 값들 local에 저장
+############################
 locals {
   rosa_vpc_id                 = data.terraform_remote_state.rosa.outputs.vpc_id
   rosa_vpc_cidr               = data.terraform_remote_state.rosa.outputs.vpc_cidr
@@ -15,7 +19,9 @@ locals {
   rosa_node_sg_ids            = data.terraform_remote_state.rosa.outputs.node_security_group_ids
 }
 
+############################
 # AZ 자동 선택
+############################
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -28,7 +34,9 @@ locals {
   )
 }
 
+############################
 # DB Subnet CIDR
+############################
 locals {
   rds_subnet_cidrs = [
     for idx in range(length(local.rds_azs)) :
@@ -36,7 +44,9 @@ locals {
   ]
 }
 
+############################
 # DB 전용 Private Subnet 생성
+############################
 resource "aws_subnet" "db" {
   for_each = {
     for idx, az in local.rds_azs :
@@ -55,7 +65,9 @@ resource "aws_subnet" "db" {
   }
 }
 
+############################
 # DB Route table 연결
+############################
 resource "aws_route_table_association" "db" {
   for_each = aws_subnet.db
 
@@ -63,7 +75,9 @@ resource "aws_route_table_association" "db" {
   route_table_id = local.rosa_private_route_table_id
 }
 
+############################
 # RDS Subnet Group 생성
+############################
 resource "aws_db_subnet_group" "this" {
   name       = "${var.name}-db-subnet-group"
   subnet_ids = [for s in aws_subnet.db : s.id]
@@ -73,7 +87,9 @@ resource "aws_db_subnet_group" "this" {
   }
 }
 
+############################
 # RDS Security Group (ROSA Woker Node SG만 허용)
+############################
 resource "aws_security_group" "rds" {
   name_prefix = "${var.name}-rds-"
   vpc_id      = local.rosa_vpc_id
@@ -97,7 +113,9 @@ resource "aws_security_group" "rds" {
   }
 }
 
-# RDS MySQL Instance 생성(사양)
+############################
+# RDS MySQL Instance 생성
+############################
 resource "aws_db_instance" "this" {
   identifier = var.name
 
